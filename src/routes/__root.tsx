@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { Outlet, createRootRoute } from '@tanstack/react-router';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import * as React from "react";
+import { Outlet, createRootRoute } from "@tanstack/react-router";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 // import BottomNavigation from '@/components/common/bottom-navigation';
 
 export const Route = createRootRoute({
@@ -10,11 +10,9 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   return (
-      <React.Fragment>
-        <Outlet />
-        <ToastContainer />
-
-        {/* <BottomNavigation /> */}
-      </React.Fragment>
+    <React.Fragment>
+      <Outlet />
+      <ToastContainer />
+    </React.Fragment>
   );
 }

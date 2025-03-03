@@ -1,3 +1,5 @@
+import { DraggableCard } from "@/components/draggable-card";
+import { DroppableList } from "@/components/droppable-list";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -6,258 +8,36 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useStore } from "@/hooks/store";
+import { useTaskBoard } from "@/hooks/useTaskBoard";
+import { EditingTask } from "@/types/task";
+import { DndContext, closestCenter } from "@dnd-kit/core";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useCallback } from "react";
-import { DndContext, closestCenter, useDraggable, useDroppable, DragEndEvent } from '@dnd-kit/core';
-import { Pencil } from 'lucide-react';
+import { useCallback } from "react";
 
 export const Route = createFileRoute("/")({
   component: TaskBoard,
 });
 
-interface Card {
-  id: string;
-  text: string;
-  tags: string[];
-}
-
-interface List {
-  id: string;
-  title: string;
-  cards: Card[];
-}
-
-interface EditingTask {
-  text: string;
-  tags: string[];
-  listId: string;
-  cardId: string;
-}
-
-const initialLists: List[] = [
-  {
-    id: "1",
-    title: "Product Backlog",
-    cards: [
-      {
-        id: "1",
-        text: "Create reusable React components",
-        tags: ["Priority: Medium", "React"],
-      },
-      { id: "2", text: "Learn React Hooks", tags: ["React", "Hooks"] },
-      {
-        id: "3",
-        text: "Create Beautiful Drag and Drop Capability",
-        tags: ["Priority: Low", "react-beautiful-dnd"],
-      },
-    ],
-  },
-  {
-    id: "2",
-    title: "Work In Progress",
-    cards: [
-      { id: "4", text: "Learn React", tags: ["Priority: High", "React"] },
-      {
-        id: "5",
-        text: "Write my first React component",
-        tags: ["Priority: Medium"],
-      },
-    ],
-  },
-  {
-    id: "3",
-    title: "Done",
-    cards: [
-      {
-        id: "6",
-        text: "Create React App",
-        tags: ["Priority: Medium", "create-react-app"],
-      },
-      {
-        id: "7",
-        text: "Write my first React component",
-        tags: ["Priority: Medium"],
-      },
-    ],
-  },
-];
-
-// Draggable Card Component
-interface DraggableCardProps {
-  card: Card;
-  index: number;
-  listId: string;
-  onEdit: (task: EditingTask) => void;
-}
-
-function DraggableCard({ card, index, listId, onEdit }: DraggableCardProps) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: `${listId}-${card.id}`,
-    data: { card, listId, index }
-  });
-
-  const style = transform ? {
-    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-    transition: 'transform 0.2s ease'
-  } : {};
-
-  const handleEdit = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    onEdit({
-      listId,
-      cardId: card.id,
-      text: card.text,
-      tags: card.tags,
-    });
-  }, [card, listId, onEdit]);
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
-      className="border rounded bg-white p-2 cursor-move flex justify-between items-start shadow-sm"
-    >
-      <div className="flex-1">
-        <p className="text-sm font-medium text-black">{card.text}</p>
-        <div className="flex flex-wrap mt-1 gap-1">
-          {card.tags.map((tag, i) => (
-            <span
-              key={i}
-              className="bg-orange-200 text-orange-800 text-xs font-semibold px-2 py-1 rounded"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="ml-2 h-6 w-6 p-0 hover:bg-gray-100"
-        onMouseDown={handleEdit}
-      >
-        <Pencil className="h-4 w-4" />
-      </Button>
-    </div>
-  );
-}
-
-// Droppable List Component
-interface DroppableListProps {
-  list: List;
-  children: React.ReactNode;
-}
-
-function DroppableList({ list, children }: DroppableListProps) {
-  const { setNodeRef } = useDroppable({
-    id: list.id,
-    data: { listId: list.id }
-  });
-
-  return (
-    <div ref={setNodeRef} className="w-80 bg-gray-200 rounded-lg shadow-md flex-shrink-0">
-      {children}
-    </div>
-  );
-}
-
 export default function TaskBoard() {
-  const [lists, setLists] = useState<List[]>(initialLists);
-  const [newListTitle, setNewListTitle] = useState<string>("");
-  const [isAddingList, setIsAddingList] = useState<boolean>(false);
-  const [newTaskText, setNewTaskText] = useState<string>("");
-  const [addingTaskListId, setAddingTaskListId] = useState<string>("");
-  const [editingTask, setEditingTask] = useState<EditingTask | null>(null);
-  const [newTag, setNewTag] = useState<string>("");
+  const {
+    lists,
+    newListTitle,
+    isAddingList,
+    newTaskText,
+    addingTaskListId,
+    editingTask,
+    newTag,
+    setNewListTitle,
+    setIsAddingList,
+    setNewTaskText,
+    setAddingTaskListId,
+    setEditingTask,
+    setNewTag,
+  } = useStore();
 
-  const addNewList = useCallback((): void => {
-    if (!newListTitle.trim()) return;
-    const newList: List = {
-      id: String(lists.length + 1),
-      title: newListTitle,
-      cards: [],
-    };
-    setLists(prev => [...prev, newList]);
-    setNewListTitle("");
-    setIsAddingList(false);
-  }, [newListTitle, lists]);
-
-  const addNewTask = useCallback((listId: string): void => {
-    if (!newTaskText.trim()) return;
-    const newTask: Card = {
-      id: String(Date.now()),
-      text: newTaskText,
-      tags: [],
-    };
-    const newLists = lists.map((list) =>
-      list.id === listId
-        ? {
-            ...list,
-            cards: [...list.cards, newTask],
-          }
-        : list
-    );
-    setLists(newLists);
-    setNewTaskText("");
-    setAddingTaskListId("");
-  }, [newTaskText, lists]);
-
-  const addTagToTask = useCallback((): void => {
-    if (!newTag.trim() || !editingTask) return;
-    const updatedLists = lists.map((list) =>
-      list.id === editingTask.listId
-        ? {
-            ...list,
-            cards: list.cards.map((card) =>
-              card.id === editingTask.cardId
-                ? { ...card, tags: [...card.tags, newTag] }
-                : card
-            ),
-          }
-        : list
-    );
-    setLists(updatedLists);
-    setEditingTask((prev) =>
-      prev ? { ...prev, tags: [...prev.tags, newTag] } : prev
-    );
-    setNewTag("");
-  }, [newTag, editingTask, lists]);
-
-  const handleDragEnd = useCallback((event: DragEndEvent): void => {
-    const { active, over } = event;
-
-    if (!over) return;
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    const [sourceListId, sourceCardId] = activeId.split('-');
-    const destListId = overId.split('-')[0];
-
-    const newLists = [...lists];
-    const sourceListIndex = newLists.findIndex(list => list.id === sourceListId);
-    const destListIndex = newLists.findIndex(list => list.id === destListId);
-    const sourceCardIndex = newLists[sourceListIndex].cards.findIndex(card => card.id === sourceCardId);
-
-    if (sourceListId === destListId) {
-      const oldIndex = sourceCardIndex;
-      const newIndex = over.data.current?.index ?? oldIndex;
-      const newCards = [...newLists[sourceListIndex].cards];
-      const [movedCard] = newCards.splice(oldIndex, 1);
-      newCards.splice(newIndex, 0, movedCard);
-      newLists[sourceListIndex] = {
-        ...newLists[sourceListIndex],
-        cards: newCards
-      };
-    } else {
-      const [movedCard] = newLists[sourceListIndex].cards.splice(sourceCardIndex, 1);
-      newLists[destListIndex].cards.push(movedCard);
-    }
-
-    setLists(newLists);
-  }, [lists]);
+  const { addNewList, addNewTask, addTagToTask, handleDragEnd } =
+    useTaskBoard();
 
   const handleEdit = useCallback((task: EditingTask) => {
     setTimeout(() => {
@@ -266,7 +46,7 @@ export default function TaskBoard() {
   }, []);
 
   return (
-    <div className="h-screen w-screen bg-[#2a5e87] pb-4 flex flex-col">
+    <div className="h-screen w-screen bg-[#2a5e87]  flex flex-col">
       <div className="w-full h-16 flex items-center justify-center uppercase text-white text-2xl font-bold text-center mb-4 bg-[#1e485f]">
         Task Board
       </div>
@@ -280,45 +60,45 @@ export default function TaskBoard() {
                   {list.title}
                 </span>
                 <span className="px-4 text-gray-700 text-xs font-semibold leading-none">
-                  {list.cards.length} Task
+                  {list.tasks.length} Task
                 </span>
               </div>
-              <div className="px-3 flex flex-col gap-2">
-                {list.cards.map((card, index) => (
+              <div className="px-3 flex flex-col gap-2 max-h-122 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+                {list.tasks.map((card, index) => (
                   <DraggableCard
                     key={card.id}
-                    card={card}
                     index={index}
                     listId={list.id}
                     onEdit={handleEdit}
+                    card={card}
                   />
                 ))}
-              </div>
-              <div className="p-2">
-                {addingTaskListId === list.id ? (
-                  <div className="flex flex-col gap-2">
-                    <Input
-                      type="text"
-                      className="w-full p-2 border rounded focus:outline-none focus:ring focus:ring-blue-300 text-gray-700"
-                      placeholder="Enter task name..."
-                      value={newTaskText}
-                      onChange={(e) => setNewTaskText(e.target.value)}
-                    />
+                <div className="p-2">
+                  {addingTaskListId === list.id ? (
+                    <div className="flex flex-col gap-2">
+                      <Input
+                        type="text"
+                        className="w-full p-2 border rounded focus:outline-none focus:ring focus:ring-blue-300 text-gray-700"
+                        placeholder="Enter task name..."
+                        value={newTaskText}
+                        onChange={(e) => setNewTaskText(e.target.value)}
+                      />
+                      <Button
+                        className="bg-blue-500 text-white hover:bg-blue-600"
+                        onClick={() => addNewTask(list.id)}
+                      >
+                        Thêm task
+                      </Button>
+                    </div>
+                  ) : (
                     <Button
-                      className="bg-blue-500 text-white hover:bg-blue-600"
-                      onClick={() => addNewTask(list.id)}
+                      className="mt-2 w-full bg-blue-500 text-white hover:bg-blue-600"
+                      onClick={() => setAddingTaskListId(list.id)}
                     >
-                      Thêm task
+                      + Thêm task mới
                     </Button>
-                  </div>
-                ) : (
-                  <Button
-                    className="mt-2 w-full bg-blue-500 text-white hover:bg-blue-600"
-                    onClick={() => setAddingTaskListId(list.id)}
-                  >
-                    + Thêm task mới
-                  </Button>
-                )}
+                  )}
+                </div>
               </div>
             </DroppableList>
           ))}
@@ -356,26 +136,33 @@ export default function TaskBoard() {
               </Button>
             )}
           </div>
-          <Dialog open={!!editingTask} onOpenChange={(open) => !open && setEditingTask(null)}>
-            <DialogContent>
+          <Dialog
+            open={!!editingTask}
+            onOpenChange={(open) => !open && setEditingTask(null)}
+          >
+            <DialogContent className="bg-white">
               <DialogHeader>
-                <DialogTitle>{editingTask?.text}</DialogTitle>
+                <DialogTitle className="text-gray-800">
+                  {editingTask?.text}
+                </DialogTitle>
               </DialogHeader>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {editingTask?.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="bg-purple-400 text-white text-xs font-semibold px-2 py-1 rounded"
-                  >
-                    {tag}
-                  </span>
-                ))}
+              <div className="flex flex-col gap-2 mb-4">
+                <div className="flex flex-wrap gap-2">
+                  {editingTask?.tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="bg-purple-400 text-white text-xs font-semibold px-2 py-1 rounded"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
                 <Input
                   type="text"
                   placeholder="Thêm tag mới"
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
-                  className="flex-1"
+                  className="flex-1 text-gray-800"
                 />
                 <Button onClick={addTagToTask}>+</Button>
               </div>
