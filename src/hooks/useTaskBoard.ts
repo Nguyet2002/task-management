@@ -61,16 +61,24 @@ export const useTaskBoard = () => {
       list.id === editingTask.listId
         ? {
             ...list,
-            cards: list.tasks.map((card) =>
-              card.id === editingTask.cardId
-                ? { ...card, tags: [...card.tags, newTag] }
-                : card
+            tasks: list.tasks.map(
+              (
+                task 
+              ) =>
+                task.id === editingTask.cardId 
+                  ? { ...task, tags: [...task.tags, newTag] }
+                  : task
             ),
           }
         : list
     );
+
     setLists(updatedLists);
-    setEditingTask(editingTask ? { ...editingTask, tags: [...editingTask.tags, newTag] } : editingTask);
+    setEditingTask(
+      editingTask
+        ? { ...editingTask, tags: [...editingTask.tags, newTag] }
+        : editingTask
+    );
     setNewTag("");
   }, [newTag, editingTask, lists]);
 

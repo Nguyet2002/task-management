@@ -150,7 +150,7 @@ export default function TaskBoard() {
               </DialogHeader>
               <div className="flex flex-col gap-2 mb-4">
                 <div className="flex flex-wrap gap-2">
-                  {editingTask?.tags.map((tag, index) => (
+                  {editingTask?.tags?.map((tag, index) => (
                     <span
                       key={index}
                       className="bg-purple-400 text-white text-xs font-semibold px-2 py-1 rounded"
