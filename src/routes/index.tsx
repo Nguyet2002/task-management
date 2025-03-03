@@ -52,57 +52,59 @@ export default function TaskBoard() {
       </div>
 
       <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div className="flex gap-4 overflow-x-auto p-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 flex-1">
+        <div className="flex gap-4 p-4 flex-1 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
           {lists.map((list) => (
-            <DroppableList key={list.id} list={list}>
-              <div className="bg-gray-200 rounded-t-lg p-4 flex flex-col">
-                <span className="px-4 text-md font-bold mb-2 text-gray-700 leading-none">
-                  {list.title}
-                </span>
-                <span className="px-4 text-gray-700 text-xs font-semibold leading-none">
-                  {list.tasks.length} Task
-                </span>
-              </div>
-              <div className="px-3 flex flex-col gap-2 max-h-122 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
-                {list.tasks.map((card, index) => (
-                  <DraggableCard
-                    key={card.id}
-                    index={index}
-                    listId={list.id}
-                    onEdit={handleEdit}
-                    card={card}
-                  />
-                ))}
-                <div className="p-2">
-                  {addingTaskListId === list.id ? (
-                    <div className="flex flex-col gap-2">
-                      <Input
-                        type="text"
-                        className="w-full p-2 border rounded focus:outline-none focus:ring focus:ring-blue-300 text-gray-700"
-                        placeholder="Enter task name..."
-                        value={newTaskText}
-                        onChange={(e) => setNewTaskText(e.target.value)}
-                      />
-                      <Button
-                        className="bg-blue-500 text-white hover:bg-blue-600"
-                        onClick={() => addNewTask(list.id)}
-                      >
-                        Thêm task
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      className="mt-2 w-full bg-blue-500 text-white hover:bg-blue-600"
-                      onClick={() => setAddingTaskListId(list.id)}
-                    >
-                      + Thêm task mới
-                    </Button>
-                  )}
+            <div className="h-screen bg-gray-200 rounded-t-lg flex flex-col">
+              <DroppableList key={list.id} list={list}>
+                <div className="flex flex-col p-4">
+                  <span className="px-4 text-md font-bold mb-2 text-gray-700 leading-none">
+                    {list.title}
+                  </span>
+                  <span className="px-4 text-gray-700 text-xs font-semibold leading-none">
+                    {list.tasks.length} Task
+                  </span>
                 </div>
-              </div>
-            </DroppableList>
+                <div className="px-3 flex flex-col gap-2">
+                  {list.tasks.map((card, index) => (
+                    <DraggableCard
+                      key={card.id}
+                      index={index}
+                      listId={list.id}
+                      onEdit={handleEdit}
+                      card={card}
+                    />
+                  ))}
+                  <div className="p-2">
+                    {addingTaskListId === list.id ? (
+                      <div className="flex flex-col gap-2">
+                        <Input
+                          type="text"
+                          className="w-full p-2 border rounded focus:outline-none focus:ring focus:ring-blue-300 text-gray-700"
+                          placeholder="Enter task name..."
+                          value={newTaskText}
+                          onChange={(e) => setNewTaskText(e.target.value)}
+                        />
+                        <Button
+                          className="bg-blue-500 text-white hover:bg-blue-600"
+                          onClick={() => addNewTask(list.id)}
+                        >
+                          Thêm task
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        className="mt-2 w-full bg-blue-500 text-white hover:bg-blue-600"
+                        onClick={() => setAddingTaskListId(list.id)}
+                      >
+                        + Thêm task mới
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </DroppableList>
+            </div>
           ))}
-          <div className="p-3 w-80 bg-gray-200 rounded-lg shadow-md flex-shrink-0">
+          <div className="p-3 w-80 bg-gray-200 rounded-lg shadow-md flex-shrink-0 h-screen">
             {isAddingList ? (
               <div className="flex flex-col gap-2 p-3 bg-black text-white rounded">
                 <Input
