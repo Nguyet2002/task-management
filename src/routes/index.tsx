@@ -99,7 +99,7 @@ function DraggableCard({ card, index, listId, onEdit }: DraggableCardProps) {
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
     transition: 'transform 0.2s ease'
-  } : undefined;
+  } : {};
 
   const handleEdit = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -117,7 +117,7 @@ function DraggableCard({ card, index, listId, onEdit }: DraggableCardProps) {
       style={style}
       {...listeners}
       {...attributes}
-      className="border rounded bg-white p-2 cursor-move flex justify-between items-start"
+      className="border rounded bg-white p-2 cursor-move flex justify-between items-start shadow-sm"
     >
       <div className="flex-1">
         <p className="text-sm font-medium text-black">{card.text}</p>
@@ -136,7 +136,7 @@ function DraggableCard({ card, index, listId, onEdit }: DraggableCardProps) {
         variant="ghost"
         size="sm"
         className="ml-2 h-6 w-6 p-0 hover:bg-gray-100"
-        onMouseDown={handleEdit} 
+        onMouseDown={handleEdit}
       >
         <Pencil className="h-4 w-4" />
       </Button>
@@ -157,7 +157,7 @@ function DroppableList({ list, children }: DroppableListProps) {
   });
 
   return (
-    <div ref={setNodeRef} className="w-80 bg-gray-200 rounded-lg shadow-md">
+    <div ref={setNodeRef} className="w-80 bg-gray-200 rounded-lg shadow-md flex-shrink-0">
       {children}
     </div>
   );
@@ -266,16 +266,16 @@ export default function TaskBoard() {
   }, []);
 
   return (
-    <div className="h-screen w-screen bg-[#2a5e87] pb-4">
-      <div className="w-screen h-16 flex items-center justify-center uppercase text-white text-2xl font-bold text-center mb-4 bg-[#1e485f]">
+    <div className="h-screen w-screen bg-[#2a5e87] pb-4 flex flex-col">
+      <div className="w-full h-16 flex items-center justify-center uppercase text-white text-2xl font-bold text-center mb-4 bg-[#1e485f]">
         Task Board
       </div>
 
       <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div className="flex gap-4 overflow-x-auto p-4">
+        <div className="flex gap-4 overflow-x-auto p-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 flex-1">
           {lists.map((list) => (
             <DroppableList key={list.id} list={list}>
-              <div className="bg-gray-200 rounded-tr-lg rounded-tl-lg p-4 flex flex-col">
+              <div className="bg-gray-200 rounded-t-lg p-4 flex flex-col">
                 <span className="px-4 text-md font-bold mb-2 text-gray-700 leading-none">
                   {list.title}
                 </span>
@@ -297,9 +297,9 @@ export default function TaskBoard() {
               <div className="p-2">
                 {addingTaskListId === list.id ? (
                   <div className="flex flex-col gap-2">
-                    <input
+                    <Input
                       type="text"
-                      className="text-gray-700 w-full p-2 border rounded focus:outline-none focus:ring focus:ring-blue-300"
+                      className="w-full p-2 border rounded focus:outline-none focus:ring focus:ring-blue-300 text-gray-700"
                       placeholder="Enter task name..."
                       value={newTaskText}
                       onChange={(e) => setNewTaskText(e.target.value)}
@@ -308,7 +308,7 @@ export default function TaskBoard() {
                       className="bg-blue-500 text-white hover:bg-blue-600"
                       onClick={() => addNewTask(list.id)}
                     >
-                      Thêm task 
+                      Thêm task
                     </Button>
                   </div>
                 ) : (
@@ -322,12 +322,12 @@ export default function TaskBoard() {
               </div>
             </DroppableList>
           ))}
-          <div className="p-3 w-80 bg-gray-200 rounded-lg shadow-md">
+          <div className="p-3 w-80 bg-gray-200 rounded-lg shadow-md flex-shrink-0">
             {isAddingList ? (
               <div className="flex flex-col gap-2 p-3 bg-black text-white rounded">
-                <input
+                <Input
                   type="text"
-                  className="w-full text-white p-2 border rounded focus:outline-none focus:ring focus:ring-blue-300 bg-gray-800"
+                  className="w-full p-2 border rounded focus:outline-none focus:ring focus:ring-blue-300 bg-gray-800 text-white"
                   placeholder="Tên cột..."
                   value={newListTitle}
                   onChange={(e) => setNewListTitle(e.target.value)}
@@ -375,6 +375,7 @@ export default function TaskBoard() {
                   placeholder="Thêm tag mới"
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
+                  className="flex-1"
                 />
                 <Button onClick={addTagToTask}>+</Button>
               </div>
